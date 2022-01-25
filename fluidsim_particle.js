@@ -1,12 +1,12 @@
 let grid;
-const dims = [256, 256];
+const dims = [512, 512];
 const resolution = 15;
-const particle_radius = 5;
+const particle_radius = 2;
 
 const particle_radius_sq = particle_radius ** 2;
 
 const dt = 0.5;
-const n_particles = 40;
+const n_particles = 500;
 
 const particle_force = 1;
 const wall_force = 1;
@@ -61,8 +61,8 @@ function generate_particles() {
     for (let n = 0; n < n_particles; n++) {
         particles.push({
             position: [
-                random(dims[0] - particle_radius) + particle_radius,
-                random(dims[1] - particle_radius) + particle_radius,
+                random(dims[0] - 2 * particle_radius) + particle_radius,
+                random(dims[1] - 2 * particle_radius) + particle_radius,
             ],
             velocity: [random(6) - 3, random(6) - 3],
         });
@@ -85,11 +85,43 @@ function particle_collisions(particle_list) {
                     particle_list[i].position,
                     particle_list[n].position
                 );
+
                 if (distance_sq < particle_radius_sq * 4) {
-                    output[i].velocity[0] = particle_list[n].velocity[0];
-                    output[i].velocity[1] = particle_list[n].velocity[1];
-                    output[n].velocity[0] = output[i].velocity[0];
-                    output[n].velocity[1] = output[i].velocity[1];
+                    let particle_1 = particle_list[n];
+                    let particle_2 = particle_list[i];
+
+                    // Adjust position
+                    let distance = sqrt(distance_sq);
+                    let dx =
+                        particle_list[n].position[0] -
+                        particle_list[i].position[0];
+                    let dy =
+                        particle_list[n].position[1] -
+                        particle_list[i].position[1];
+
+                    let norm = [dx / distance, dy / distance];
+                    let adjustment = 2 * particle_radius - distance;
+
+                    output[n].position[0] += adjustment * norm[0];
+                    output[n].position[1] += adjustment * norm[1];
+                    output[i].position[0] -= adjustment * norm[0];
+                    output[i].position[1] -= adjustment * norm[1];
+
+                    // Adjust velocity
+                    let p =
+                        particle_1.velocity[0] * norm[0] +
+                        particle_1.velocity[1] * norm[1] -
+                        (particle_2.velocity[0] * norm[0] +
+                            particle_2.velocity[1] * norm[1]);
+
+                    output[n].velocity[0] =
+                        particle_1.velocity[0] - p * norm[0];
+                    output[n].velocity[1] =
+                        particle_1.velocity[1] - p * norm[1];
+                    output[i].velocity[0] =
+                        particle_2.velocity[0] + p * norm[0];
+                    output[i].velocity[1] =
+                        particle_2.velocity[1] + p * norm[1];
                 }
             }
         }
@@ -100,16 +132,18 @@ function particle_collisions(particle_list) {
 function wall_collisions(particle_list) {
     let output = particle_list;
     for (let n = 0; n < particle_list.length; n++) {
-        if (
-            output[n].position[0] <= particle_radius ||
-            output[n].position[0] >= dims[0] - particle_radius - 1
-        ) {
+        if (output[n].position[0] <= particle_radius) {
+            output[n].position[0] = particle_radius;
+            output[n].velocity[0] = -particle_list[n].velocity[0];
+        } else if (output[n].position[0] >= dims[0] - particle_radius - 1) {
+            output[n].position[0] = dims[0] - particle_radius - 1;
             output[n].velocity[0] = -particle_list[n].velocity[0];
         }
-        if (
-            output[n].position[1] <= particle_radius ||
-            output[n].position[1] >= dims[1] - particle_radius - 1
-        ) {
+        if (output[n].position[1] <= particle_radius) {
+            output[n].position[1] = particle_radius;
+            output[n].velocity[1] = -particle_list[n].velocity[1];
+        } else if (output[n].position[1] >= dims[1] - particle_radius - 1) {
+            output[n].position[1] = dims[1] - particle_radius - 1;
             output[n].velocity[1] = -particle_list[n].velocity[1];
         }
     }
@@ -138,8 +172,8 @@ function draw() {
     background(0);
     noStroke();
 
-    // particles = particle_collisions(particles);
     particles = wall_collisions(particles);
+    particles = particle_collisions(particles);
     particles = update_position(particles);
 
     for (let n = 0; n < particles.length; n++) {
