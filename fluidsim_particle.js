@@ -6,19 +6,19 @@ const particle_radius = 1;
 const particle_radius_sq = particle_radius ** 2;
 
 const dt = 0.5;
-const n_particles = 5000;
+const n_particles = 7500;
 
 const particle_force = 1;
 const wall_force = 1;
 const particle_mass = 1;
 
-const wind_speed = 8;
+const wind_speed = 40;
 const vert_speed_range = 1;
 
-const partition_cell_size = 16;
+const partition_cell_size = 4;
 
-const particle_view = false;
-const fluid_view = true;
+const particle_view = true;
+const fluid_view = false;
 const cell_size = 512 / 32;
 const opacity_multiplier = 150;
 
@@ -314,7 +314,7 @@ function add_particles(particle_list) {
         let particle;
         // Generate Coordinates, redo if they're inside a barrier
         while (!particle) {
-            let x = 2 + particle_radius;
+            let x = 2 + particle_radius + random(wind_speed / 2);
             let y = random(dims[1] - 2 * particle_radius) + particle_radius;
 
             let overlap = false;
