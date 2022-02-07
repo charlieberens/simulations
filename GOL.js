@@ -9,10 +9,20 @@ function make2DArray(cols, rows) {
 let grid;
 let dims = [150, 150];
 let resolution = 5;
+let speed = 30;
+
+function slider(e) {
+    if (e.name === "speed") {
+        speed = e.value;
+    }
+}
 
 function setup() {
-    createCanvas(resolution * dims[0], resolution * dims[1]);
+    let canvas = createCanvas(resolution * dims[0], resolution * dims[1]);
     grid = make2DArray(...dims);
+
+    frameRate(speed);
+    canvas.parent("#canvas-cont");
 
     // Create Starting State
     for (let i = 0; i < dims[0]; i++) {
@@ -66,6 +76,7 @@ function draw() {
     background(0);
 
     grid = calculateNext(grid);
+    frameRate(speed);
 
     for (let i = 0; i < dims[0]; i++) {
         for (let j = 0; j < dims[1]; j++) {

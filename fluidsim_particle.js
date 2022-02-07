@@ -1,24 +1,20 @@
 let grid;
 const dims = [512, 512];
 const resolution = 15;
-const particle_radius = 1;
 
-const particle_radius_sq = particle_radius ** 2;
+let particle_radius = 1;
+let particle_radius_sq = particle_radius ** 2;
 
 const dt = 0.5;
-const n_particles = 7500;
+let n_particles = 5000;
 
-const particle_force = 1;
-const wall_force = 1;
-const particle_mass = 1;
-
-const wind_speed = 40;
-const vert_speed_range = 1;
+let wind_speed = 20;
+const vert_speed_range = 5;
 
 const partition_cell_size = 4;
 
-const particle_view = true;
-const fluid_view = false;
+let particle_view = false;
+let fluid_view = true;
 const cell_size = 512 / 32;
 const opacity_multiplier = 150;
 
@@ -75,8 +71,30 @@ class Circle extends Barrier {
     }
 }
 
+function boolSwitch(e) {
+    if (e.name === "particle") {
+        particle_view = e.checked;
+    }
+    if (e.name === "fluid") {
+        fluid_view = e.checked;
+    }
+}
+function slider(e) {
+    if (e.name === "particle-size") {
+        particle_radius = e.value / 2;
+        particle_radius_sq = particle_radius ** 2;
+    }
+    if (e.name === "particle-count") {
+        n_particles = e.value;
+    }
+    if (e.name === "wind-speed") {
+        wind_speed = Math.floor(e.value);
+    }
+}
+
 function setup() {
-    createCanvas(dims[0], dims[1]);
+    let canvas = createCanvas(dims[0], dims[1]);
+    canvas.parent("#canvas-cont");
 
     // Load objects
     barriers.push(new Circle(256, 256, 80));
@@ -247,8 +265,7 @@ function wall_collisions(particle_list) {
             output[n].position[0] >= dims[0] + particle_radius - 1
         ) {
             output.splice(n, 1);
-        }
-        if (
+        } else if (
             output[n].position[1] <= -particle_radius ||
             output[n].position[1] >= dims[1] + particle_radius - 1
         ) {
@@ -358,18 +375,6 @@ function particle_renderer(particles, opacity) {
             particle_radius * 2
         );
     }
-    for (let i = 0; i < barriers.length; i++) {
-        if (barriers[i].type === "circle") {
-            fill(0);
-            stroke(255);
-            ellipse(
-                barriers[i].center[0],
-                barriers[i].center[1],
-                barriers[i].r * 2,
-                barriers[i].r * 2
-            );
-        }
-    }
 }
 
 function fluid_renderer(particles) {
@@ -389,7 +394,6 @@ function fluid_renderer(particles) {
             max(Math.floor(particle.position[1] / cell_size), 0),
             grid.length - 1
         );
-
         grid[x][y] += 1;
     }
     for (let i = 0; i < grid.length; i++) {
@@ -401,20 +405,10 @@ function fluid_renderer(particles) {
                 grid[i][min(j + 1, grid[i].length - 1)] +
                 grid[i][max(j - 1, 0)];
 
-            fill((opacity_multiplier * sum * 1000) / n_particles / cell_size);
-            rect(i * cell_size, j * cell_size, cell_size, cell_size);
-        }
-    }
-    for (let i = 0; i < barriers.length; i++) {
-        if (barriers[i].type === "circle") {
-            fill(0);
-            stroke(255);
-            ellipse(
-                barriers[i].center[0],
-                barriers[i].center[1],
-                barriers[i].r * 2,
-                barriers[i].r * 2
+            fill(
+                (opacity_multiplier * sum * 1000) / particles.length / cell_size
             );
+            rect(i * cell_size, j * cell_size, cell_size, cell_size);
         }
     }
 }
@@ -436,6 +430,18 @@ function draw() {
     }
     if (particle_view) {
         particle_renderer(particles);
+    }
+    for (let i = 0; i < barriers.length; i++) {
+        if (barriers[i].type === "circle") {
+            fill(0);
+            stroke(255);
+            ellipse(
+                barriers[i].center[0],
+                barriers[i].center[1],
+                barriers[i].r * 2,
+                barriers[i].r * 2
+            );
+        }
     }
 }
 
