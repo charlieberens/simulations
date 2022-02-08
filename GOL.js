@@ -13,7 +13,8 @@ let speed = 30;
 
 function slider(e) {
     if (e.name === "speed") {
-        speed = e.value;
+        speed = Math.min(e.value);
+        frameRate(speed);
     }
 }
 
@@ -76,7 +77,6 @@ function draw() {
     background(0);
 
     grid = calculateNext(grid);
-    frameRate(speed);
 
     for (let i = 0; i < dims[0]; i++) {
         for (let j = 0; j < dims[1]; j++) {
