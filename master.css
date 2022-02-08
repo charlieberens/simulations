@@ -12,6 +12,21 @@
     box-sizing: border-box;
 }
 
+#back {
+    position: absolute;
+    top: 2rem;
+    left: 2rem;
+}
+#back a {
+    text-decoration: none;
+    color: inherit;
+    opacity: 0.5;
+    transition: 0.2s ease opacity;
+    font-size: 20pt;
+}
+#back a:hover {
+    opacity: 0.9;
+}
 body {
     font-family: Halcom, "Helvetica", "Segoe-UI", sans-serif;
     min-height: 100vh;
