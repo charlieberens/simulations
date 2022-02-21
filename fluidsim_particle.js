@@ -11,7 +11,7 @@ let n_particles = 5000;
 let wind_speed = 20;
 const vert_speed_range = 5;
 
-const partition_cell_size = 4;
+let partition_cell_size = 2 ** Math.ceil(Math.log2(particle_radius * 8));
 
 let particle_view = false;
 let fluid_view = true;
@@ -35,13 +35,13 @@ class Circle extends Barrier {
         this.type = "circle";
     }
 
-    distance(pos) {
+    distance(pos, particle_rad) {
         return (
             sqrt(
                 (pos[0] - this.center[0]) ** 2 + (pos[1] - this.center[1]) ** 2
             ) -
             this.r -
-            particle_radius
+            particle_rad
         );
     }
 
@@ -83,6 +83,8 @@ function slider(e) {
     if (e.name === "particle-size") {
         particle_radius = e.value / 2;
         particle_radius_sq = particle_radius ** 2;
+        partition_cell_size = 2 ** Math.ceil(Math.log2(particle_radius * 8));
+        console.log(partition_cell_size);
     }
     if (e.name === "particle-count") {
         n_particles = e.value;
@@ -115,7 +117,7 @@ function generate_particles() {
 
             let overlap = false;
             for (let i = 0; i < barriers.length; i++) {
-                let distance = barriers[i].distance([x, y]);
+                let distance = barriers[i].distance([x, y], particle_radius);
                 if (distance <= particle_radius) {
                     overlap = true;
                 }
@@ -336,7 +338,7 @@ function add_particles(particle_list) {
 
             let overlap = false;
             for (let i = 0; i < barriers.length; i++) {
-                let distance = barriers[i].distance([x, y]);
+                let distance = barriers[i].distance([x, y], particle_radius);
                 if (distance <= particle_radius) {
                     overlap = true;
                 }
